@@ -5,6 +5,7 @@ import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Random;
+
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -12,123 +13,124 @@ import javax.swing.JPanel;
 public class Board extends JPanel {
     private static final long serialVersionUID = 6195235521361212179L;
 
-    private final int NUM_IMAGES = 13;
-    private final int CELL_SIZE = 15;
-
-    private final int COVER_FOR_CELL = 10;
-    private final int MARK_FOR_CELL = 10;
-    private final int EMPTY_CELL = 0;
-    private final int MINE_CELL = 9;
-    private final int COVERED_MINE_CELL = MINE_CELL + COVER_FOR_CELL;
-    private final int MARKED_MINE_CELL = COVERED_MINE_CELL + MARK_FOR_CELL;
-
-    private final int DRAW_MINE = 9;
-    private final int DRAW_COVER = 10;
-    private final int DRAW_MARK = 11;
-    private final int DRAW_WRONG_MARK = 12;
+    private static final int NUM_IMAGES = 13;
+    private static final int CELL_SIZE = 15;
+    private static final int COVER_FOR_CELL = 10;
+    private static final int MARK_FOR_CELL = 10;
+    private static final int EMPTY_CELL = 0;
+    private static final int MINE_CELL = 9;
+    private static final int COVERED_MINE_CELL = MINE_CELL + COVER_FOR_CELL;
+    private static final int MARKED_MINE_CELL = COVERED_MINE_CELL + MARK_FOR_CELL;
+    private static final int DRAW_MINE = 9;
+    private static final int DRAW_COVER = 10;
+    private static final int DRAW_MARK = 11;
+    private static final int DRAW_WRONG_MARK = 12;
 
     private int[] field;
     private boolean inGame;
-    private int mines_left;
+    private int minesLeft;
     private Image[] img;
     private int mines = 40;
     private int rows = 16;
     private int cols = 16;
-    private int all_cells;
+    private int allCells;
     private JLabel statusbar;
 
     public Board(JLabel statusbar) {
         this.statusbar = statusbar;
+        this.img = new Image[NUM_IMAGES];
+        String basePath = "C:\\Users\\NeonTech.DZ\\Downloads\\mineGame\\mineGame\\images\\";
 
-        img = new Image[NUM_IMAGES];
-        loadImages();
+        // Load images for game tiles
+        for (int i = 0; i < NUM_IMAGES; i++) {
+            img[i] = new ImageIcon(basePath + i + ".gif").getImage();
+        }
 
         setDoubleBuffered(true);
         addMouseListener(new MinesAdapter());
         newGame();
     }
 
-    private void loadImages() {
-        for (int i = 0; i < NUM_IMAGES; i++) {
-            img[i] = new ImageIcon(getClass().getResource("/images/" + i + ".gif")).getImage();
-        }
-    }
-
+    // Initializes a new game
     public void newGame() {
         Random random = new Random();
-        int i = 0;
-        int position;
+        int position, cell, currentCol;
 
         inGame = true;
-        mines_left = mines;
-        all_cells = rows * cols;
-        field = new int[all_cells];
+        minesLeft = mines;
+        allCells = rows * cols;
+        field = new int[allCells];
 
-        for (int j = 0; j < all_cells; j++) {
-            field[j] = COVER_FOR_CELL;
+        // Set all cells as covered
+        for (int i = 0; i < allCells; i++) {
+            field[i] = COVER_FOR_CELL;
         }
 
-        statusbar.setText(Integer.toString(mines_left));
+        statusbar.setText(Integer.toString(minesLeft));
 
-        while (i < mines) {
-            position = random.nextInt(all_cells);
+        // Randomly place mines on the board
+        for (int i = 0; i < mines; i++) {
+            position = random.nextInt(allCells);
 
             if (field[position] != COVERED_MINE_CELL) {
+                currentCol = position % cols;
                 field[position] = COVERED_MINE_CELL;
-                incrementAdjacentCells(position);
-                i++;
+
+                // Increment the surrounding cells' values to indicate proximity to mines
+                incrementNeighborCells(position, currentCol);
+            } else {
+                i--; // Retry if mine placement fails
             }
         }
     }
 
-    private void incrementAdjacentCells(int position) {
-        int[] directions = {-1, 1, -cols, cols, -cols - 1, -cols + 1, cols - 1, cols + 1};
-        int current_col = position % cols;
-
-        for (int dir : directions) {
-            int neighbor = position + dir;
-
-            if (isValidNeighbor(position, neighbor, dir, current_col)) {
-                if (field[neighbor] != COVERED_MINE_CELL) {
-                    field[neighbor]++;
-                }
-            }
-        }
-    }
-
-    private boolean isValidNeighbor(int position, int neighbor, int dir, int current_col) {
-        boolean withinBounds = neighbor >= 0 && neighbor < all_cells;
-        boolean notOutOfRow = (dir == -1 && current_col > 0) || (dir == 1 && current_col < cols - 1) || Math.abs(dir) > 1;
-        return withinBounds && notOutOfRow;
-    }
-
-    public void findEmptyCells(int j) {
-        int[] directions = {-1, 1, -cols, cols, -cols - 1, -cols + 1, cols - 1, cols + 1};
-        int current_col = j % cols;
-
-        for (int dir : directions) {
-            int neighbor = j + dir;
-
-            if (isValidNeighbor(j, neighbor, dir, current_col) && field[neighbor] > MINE_CELL) {
-                field[neighbor] -= COVER_FOR_CELL;
-                if (field[neighbor] == EMPTY_CELL) {
-                    findEmptyCells(neighbor);
-                }
-            }
-        }
-    }
-
-    @Override
-    public void paint(Graphics g) {
+    // Helper method to increment the neighboring cells around a mine
+    private void incrementNeighborCells(int position, int currentCol) {
         int cell;
-        int uncover = 0;
+        int[] directions = {-1, 0, 1}; // Directions to check the neighbors
 
+        for (int dRow : directions) {
+            for (int dCol : directions) {
+                if (dRow == 0 && dCol == 0) continue; // Skip the center cell (it is the mine itself)
+                
+                cell = position + dRow * cols + dCol;
+                if (cell >= 0 && cell < allCells && field[cell] != COVERED_MINE_CELL) {
+                    field[cell]++;
+                }
+            }
+        }
+    }
+
+    // Recursive method to uncover cells that are empty
+    public void findEmptyCells(int j) {
+        int currentCol = j % cols;
+        int cell;
+
+        // Uncover all adjacent cells if the current cell is empty
+        for (int dRow = -1; dRow <= 1; dRow++) {
+            for (int dCol = -1; dCol <= 1; dCol++) {
+                if (dRow == 0 && dCol == 0) continue;
+
+                cell = j + dRow * cols + dCol;
+                if (cell >= 0 && cell < allCells && field[cell] > MINE_CELL) {
+                    field[cell] -= COVER_FOR_CELL;
+                    if (field[cell] == EMPTY_CELL) {
+                        findEmptyCells(cell); // Recursive call for empty cells
+                    }
+                }
+            }
+        }
+    }
+
+    // Paint the game board (called automatically when the board needs to be redrawn)
+    public void paint(Graphics g) {
+        int uncover = 0;
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                cell = field[(i * cols) + j];
+                int cell = field[(i * cols) + j];
 
                 if (inGame && cell == MINE_CELL) {
-                    inGame = false;
+                    inGame = false; // Game over when mine is uncovered
                 }
 
                 if (!inGame) {
@@ -154,6 +156,7 @@ public class Board extends JPanel {
             }
         }
 
+        // Game won condition
         if (uncover == 0 && inGame) {
             inGame = false;
             statusbar.setText("Game won");
@@ -162,8 +165,8 @@ public class Board extends JPanel {
         }
     }
 
+    // MouseAdapter to handle user interactions (clicks and right-clicks)
     class MinesAdapter extends MouseAdapter {
-        @Override
         public void mousePressed(MouseEvent e) {
             int x = e.getX();
             int y = e.getY();
@@ -174,49 +177,51 @@ public class Board extends JPanel {
             if (!inGame) {
                 newGame();
                 repaint();
-                return;
             }
 
             if (x < cols * CELL_SIZE && y < rows * CELL_SIZE) {
-                int index = cRow * cols + cCol;
-
                 if (e.getButton() == MouseEvent.BUTTON3) {
-                    toggleMark(index);
+                    handleRightClick(cRow, cCol);
                 } else {
-                    uncoverCell(index);
+                    handleLeftClick(cRow, cCol);
                 }
-
-                repaint();
             }
         }
 
-        private void toggleMark(int index) {
-            if (field[index] > MINE_CELL) {
-                if (field[index] <= COVERED_MINE_CELL && mines_left > 0) {
-                    field[index] += MARK_FOR_CELL;
-                    mines_left--;
-                } else if (field[index] > COVERED_MINE_CELL) {
-                    field[index] -= MARK_FOR_CELL;
-                    mines_left++;
+        private void handleRightClick(int cRow, int cCol) {
+            if (field[(cRow * cols) + cCol] > MINE_CELL) {
+                if (field[(cRow * cols) + cCol] <= COVERED_MINE_CELL) {
+                    if (minesLeft > 0) {
+                        field[(cRow * cols) + cCol] += MARK_FOR_CELL;
+                        minesLeft--;
+                        statusbar.setText(Integer.toString(minesLeft));
+                    } else {
+                        statusbar.setText("No marks left");
+                    }
+                } else {
+                    field[(cRow * cols) + cCol] -= MARK_FOR_CELL;
+                    minesLeft++;
+                    statusbar.setText(Integer.toString(minesLeft));
                 }
-                statusbar.setText(Integer.toString(mines_left));
             }
         }
 
-        private void uncoverCell(int index) {
-            if (field[index] > COVERED_MINE_CELL) {
-                return;
-            }
+        private void handleLeftClick(int cRow, int cCol) {
+            if (field[(cRow * cols) + cCol] > COVERED_MINE_CELL) return;
 
-            if (field[index] > MINE_CELL && field[index] < MARKED_MINE_CELL) {
-                field[index] -= COVER_FOR_CELL;
+            if (field[(cRow * cols) + cCol] > MINE_CELL && field[(cRow * cols) + cCol] < MARKED_MINE_CELL) {
+                field[(cRow * cols) + cCol] -= COVER_FOR_CELL;
 
-                if (field[index] == MINE_CELL) {
+                if (field[(cRow * cols) + cCol] == MINE_CELL) {
                     inGame = false;
-                } else if (field[index] == EMPTY_CELL) {
-                    findEmptyCells(index);
+                }
+
+                if (field[(cRow * cols) + cCol] == EMPTY_CELL) {
+                    findEmptyCells((cRow * cols) + cCol);
                 }
             }
+
+            repaint();
         }
     }
 }
