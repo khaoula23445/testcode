@@ -10,7 +10,6 @@ public class Mines extends JFrame {
 
     private static final int WIDTH = 250;
     private static final int HEIGHT = 290;
-    private JLabel statusbar;
 
     public Mines() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -18,7 +17,8 @@ public class Mines extends JFrame {
         setLocationRelativeTo(null);
         setTitle("Minesweeper");
 
-        statusbar = new JLabel("");
+        // Declare 'statusbar' as a local variable inside the constructor
+        JLabel statusbar = new JLabel("");
         add(statusbar, BorderLayout.SOUTH);
 
         add(new Board(statusbar));
