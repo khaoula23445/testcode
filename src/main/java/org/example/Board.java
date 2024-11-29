@@ -92,7 +92,7 @@ public class Board extends JPanel {
     }
 
     public void findEmptyCells(int index) {
-        int currentCol = index % cols;
+        int currentCol = index % cols; // Variable removed from the loop for clarity
 
         for (int dRow = -1; dRow <= 1; dRow++) {
             for (int dCol = -1; dCol <= 1; dCol++) {
