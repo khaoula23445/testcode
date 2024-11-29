@@ -17,10 +17,11 @@ public class Mines extends JFrame {
         setLocationRelativeTo(null);
         setTitle("Minesweeper");
 
-        // Declare 'statusbar' as a local variable inside the constructor
+        // Declare statusbar as a local variable in the constructor
         JLabel statusbar = new JLabel("");
         add(statusbar, BorderLayout.SOUTH);
 
+        // Pass statusbar to Board constructor
         add(new Board(statusbar));
 
         setResizable(false);
