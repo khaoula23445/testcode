@@ -29,10 +29,15 @@ public class AppTest
     }
 
     /**
-     * Rigourous Test :-)
+     * Example of a valid test.
+     * 
+     * This test case could be meaningful by checking actual functionality.
      */
     public void testApp()
     {
-        assertTrue( true );
+        // Example assertion for a meaningful test
+        int expected = 5;
+        int actual = 2 + 3;
+        assertEquals("Sum should be 5", expected, actual);
     }
 }
