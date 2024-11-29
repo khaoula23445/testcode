@@ -1,15 +1,17 @@
 package org.example;
 
-import java.awt.BorderLayout;
-
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import java.awt.BorderLayout;
 
 public class Mines extends JFrame {
     private static final long serialVersionUID = 4772165125287256837L;
 
+    // Constants for window dimensions
     private static final int WIDTH = 250;
     private static final int HEIGHT = 290;
+
+    private JLabel statusbar;
 
     public Mines() {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -17,12 +19,11 @@ public class Mines extends JFrame {
         setLocationRelativeTo(null);
         setTitle("Minesweeper");
 
-        // Declare statusbar as a local variable in the constructor
-        JLabel statusbar = new JLabel("");
+        statusbar = new JLabel("Mines left: 40");
         add(statusbar, BorderLayout.SOUTH);
 
-        // Pass statusbar to Board constructor
-        add(new Board(statusbar));
+        Board board = new Board(statusbar);
+        add(board, BorderLayout.CENTER);
 
         setResizable(false);
         setVisible(true);
