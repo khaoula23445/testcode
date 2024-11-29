@@ -5,7 +5,6 @@ import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Random;
-
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -54,7 +53,7 @@ public class Board extends JPanel {
     // Initializes a new game
     public void newGame() {
         Random random = new Random();
-        int position, cell, currentCol;
+        int position;
 
         inGame = true;
         minesLeft = mines;
@@ -73,11 +72,10 @@ public class Board extends JPanel {
             position = random.nextInt(allCells);
 
             if (field[position] != COVERED_MINE_CELL) {
-                currentCol = position % cols;
                 field[position] = COVERED_MINE_CELL;
 
                 // Increment the surrounding cells' values to indicate proximity to mines
-                incrementNeighborCells(position, currentCol);
+                incrementNeighborCells(position);
             } else {
                 i--; // Retry if mine placement fails
             }
@@ -85,7 +83,7 @@ public class Board extends JPanel {
     }
 
     // Helper method to increment the neighboring cells around a mine
-    private void incrementNeighborCells(int position, int currentCol) {
+    private void incrementNeighborCells(int position) {
         int cell;
         int[] directions = {-1, 0, 1}; // Directions to check the neighbors
 
@@ -103,7 +101,6 @@ public class Board extends JPanel {
 
     // Recursive method to uncover cells that are empty
     public void findEmptyCells(int j) {
-        int currentCol = j % cols;
         int cell;
 
         // Uncover all adjacent cells if the current cell is empty
