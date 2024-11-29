@@ -37,7 +37,7 @@ public class Board extends JPanel {
     private JLabel statusbar;
 
     public Board(JLabel statusbar) {
-        this.statusbar = statusbar;
+        this.statusbar = statusbar; // statusbar should be passed as a parameter to constructor
         this.img = new Image[NUM_IMAGES];
         String basePath = "C:\\Users\\NeonTech.DZ\\Downloads\\mineGame\\mineGame\\images\\";
 
@@ -62,7 +62,7 @@ public class Board extends JPanel {
             field[i] = COVER_FOR_CELL;
         }
 
-        statusbar.setText(Integer.toString(minesLeft));
+        updateStatusbar(minesLeft);
 
         for (int i = 0; i < mines; i++) {
             int position = random.nextInt(allCells);
@@ -92,8 +92,6 @@ public class Board extends JPanel {
     }
 
     public void findEmptyCells(int index) {
-       
-
         for (int dRow = -1; dRow <= 1; dRow++) {
             for (int dCol = -1; dCol <= 1; dCol++) {
                 if (dRow == 0 && dCol == 0) continue;
@@ -151,6 +149,11 @@ public class Board extends JPanel {
         }
     }
 
+    // Helper method to update statusbar
+    private void updateStatusbar(int minesLeft) {
+        statusbar.setText(Integer.toString(minesLeft));
+    }
+
     class MinesAdapter extends MouseAdapter {
         public void mousePressed(MouseEvent e) {
             int x = e.getX();
@@ -180,14 +183,14 @@ public class Board extends JPanel {
                     if (minesLeft > 0) {
                         field[index] += MARK_FOR_CELL;
                         minesLeft--;
-                        statusbar.setText(Integer.toString(minesLeft));
+                        updateStatusbar(minesLeft);
                     } else {
                         statusbar.setText("No marks left");
                     }
                 } else {
                     field[index] -= MARK_FOR_CELL;
                     minesLeft++;
-                    statusbar.setText(Integer.toString(minesLeft));
+                    updateStatusbar(minesLeft);
                 }
             }
         }
